@@ -1,8 +1,5 @@
-# syntax=docker/dockerfile:1
+FROM node:14-alpine
 
-FROM python:3.9-slim
-LABEL maintainer="Lkas Wolfsteiner <lukas@wolfsteiner.media>"
-LABEL org.opencontainers.image.source=https://github.com/dotWee/docker-adb-mqtt-bridge
 
 ENV LANG C.UTF-8
 
@@ -14,12 +11,14 @@ ENV PASSWORD mqttpass
 ENV ADB_DEVICE 192.168.1.45
 ENV POLL_INTERVAL 5
 
+ENV PYTHONUNBUFFERED=1
+RUN apk add --update --no-cache android-tools python3 && ln -sf python3 /usr/bin/python
+RUN python3 -m ensurepip
+RUN pip3 install --no-cache --upgrade pip setuptools
 WORKDIR /usr/src/app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY adb_monitor.py .
-RUN apt-get update && \
-    apt-get install -y android-tools-adb mosquitto-clients jq
 
 # adb settings must be persistant
 VOLUME [ "/config" ]
